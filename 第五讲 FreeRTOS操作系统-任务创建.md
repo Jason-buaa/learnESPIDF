@@ -136,6 +136,7 @@ void app_main() {
     );
 }
 ```
-
+## 参考
+[ESP IDF LOG日志库](https://docs.espressif.com/projects/esp-idf/zh_CN/stable/esp32/api-reference/system/log.html)
 
 
