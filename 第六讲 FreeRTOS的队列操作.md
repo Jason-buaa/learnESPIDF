@@ -21,12 +21,15 @@
 
 #### 1. 创建队列
 
-我们首先定义一个队列句柄，并创建一个队列：
+我们首先定义一个队列句柄：
 
 ```c
-#include "FreeRTOS.h"
-#include "queue.h"
-#include "task.h"
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "esp_log.h"
+#include "string.h"
 
 // 定义队列句柄
 QueueHandle_t queueHandle;
@@ -36,8 +39,6 @@ typedef struct {
     int value;
 } DataQueue;
 
-// 创建队列
-queueHandle = xQueueCreate(10, sizeof(DataQueue)); // 队列最大容量为 10，每个单元占用 sizeof(DataQueue) 字节
 ```
 
 #### 2. 定义任务函数
@@ -50,15 +51,17 @@ void TaskA(void *pvParameters) {
     DataQueue data;
     while (1) {
         if (xQueueReceive(queueHandle, &data, 100)) { // 等待时间设为 100 ticks
-            printf("Received value: %d\n", data.value);
+            ESP_LOGI("Task A", "Received value: %d\n", data.value);
         }
     }
 }
+
 ```
 任务 B：向队列发送数据
 ```c
 void TaskB(void *pvParameters) {
-    DataQueue data = {0}; // 初始化数据为 0
+    DataQueue data; // 初始化数据为 0
+    memset(&data, 0, sizeof(DataQueue));
     while (1) {
         data.value++;
         xQueueSend(queueHandle, &data, 100); // 等待时间设为 100 ticks
@@ -70,16 +73,14 @@ void TaskB(void *pvParameters) {
 
 在 main 函数中，我们创建这两个任务并启动调度器：
 ```c
-int main(void) {
-    // 创建任务
+void app_main(void)
+{
+    // 创建队列
+    queueHandle = xQueueCreate(10, sizeof(DataQueue)); // 队列最大容量为 10，每个单元占用 sizeof(DataQueue) 字节
     xTaskCreate(TaskA, "TaskA", 2048, NULL, 3, NULL); // 任务 A，堆栈大小 2048 字节，优先级 3
     xTaskCreate(TaskB, "TaskB", 2048, NULL, 3, NULL); // 任务 B，堆栈大小 2048 字节，优先级 3
-
-    // 启动调度器
-    vTaskStartScheduler();
-
-    return 0;
 }
+
 ```
 
 ### 总结
