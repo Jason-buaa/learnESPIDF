@@ -114,27 +114,24 @@ FreeRTOS 操作系统中，任务可以存在以下几种状态：
 以下是一个简单的任务创建和延时示例：
 
 ```c
+#include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_log.h"
+
 
 void TaskA(void* pvParameters) {
     while (1) {
-        printf("Hello World\n");
+        ESP_LOGI("01_hello","Hello World\n");
         vTaskDelay(pdMS_TO_TICKS(500));  // 延时 500ms
     }
 }
 
-void app_main() {
-    xTaskCreatePinnedToCore(
-        TaskA,          // 任务函数
-        "hello_world",  // 任务名称
-        2048,           // 堆栈大小
-        NULL,           // 任务参数
-        3,              // 优先级
-        NULL,           // 任务句柄
-        1               // 内核选择
-    );
+void app_main(void)
+{
+    xTaskCreatePinnedToCore(TaskA, "TaskA", 2048, NULL, 1, NULL, 0); // 创建任务
 }
+
 ```
 ## 参考
 [ESP IDF LOG日志库](https://docs.espressif.com/projects/esp-idf/zh_CN/stable/esp32/api-reference/system/log.html)
